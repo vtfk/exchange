@@ -17,7 +17,14 @@ param(
 
     ## ONLY GROUPS (distinguishedNames)
     [Parameter()]
-    [string[]]$BypassModeratorGroups
+    [string[]]$BypassModeratorGroups,
+
+    <#Notify all senders when their messages aren’t approved. = 6
+    Notify senders in your organization when their messages aren’t approved. = 2
+    Don’t notify anyone when a message isn’t approved. = 0#>
+    [Parameter()]
+    [ValidateSet(0, 2, 6)]
+    [int]$ModerationFlags = 6
 )
 
 if ($Moderators) {
@@ -72,6 +79,11 @@ if ($PSBoundParameters.ContainsKey('BypassModeratorUsers')) {
 if ($PSBoundParameters.ContainsKey('BypassModeratorGroups')) {
     if ($group.Contains('dlMemSubmitPerms')) { $replaceSplat.Add('dlMemSubmitPerms', ($group.dlMemSubmitPerms + $BypassModeratorGroups)) }
     else { $addSplat.Add('dlMemSubmitPerms', $BypassModeratorGroups) }
+}
+
+if ($PSBoundParameters.ContainsKey('ModerationFlags')) {
+    if ($group.Contains('msExchModerationFlags')) { $replaceSplat.Add('msExchModerationFlags', $ModerationFlags) }
+    else { $addSplat.Add('msExchModerationFlags', $ModerationFlags) }
 }
 
 if ($addSplat.Count -gt 0) { $groupSplat.Add("Add", $addSplat) }
